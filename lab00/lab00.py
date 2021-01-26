@@ -1,6 +1,6 @@
 # Change this function
 def my_palindrome():
-    return ''
+    return '11211'
 
 # Do not change the main method
 def main():
