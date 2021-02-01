@@ -22,7 +22,22 @@ def captured_output():
 
 # implement this function
 def is_perfect(n):
-    pass
+    sum = 0
+    list = []
+    for i in range(1, n + 1):
+        if n % i == 0:
+            if list.__contains__(i):
+                continue
+            list.append(i)
+            list.append(n / i)
+            sum = sum + i + (n / i)
+    while(list.__contains__(n)):
+        sum -= n
+        del list[list.index(n)]
+    #print(f"SUM: {sum}")
+    return sum == n
+
+
 
 # (3 points)
 def test1():
@@ -40,7 +55,11 @@ def test1():
 
 # implement this function
 def multiples_of_3_and_5(n):
-    pass
+    sum = 0
+    for i in range(1, n):
+        if i % 3 == 0 or i % 5 == 0:
+            sum += i
+    return sum
 
 # (3 points)
 def test2():
@@ -53,7 +72,13 @@ def test2():
 # EXERCISE 3
 #################################################################################
 def integer_right_triangles(p):
-    pass
+    sum = 0
+    triples = [12, 30, 40, 56, 70, 84, 90, 126, 132, 144, 154, 176, 182, 198, 208]
+    for i in triples:
+        if(p % i == 0):
+            sum += 1
+    return sum
+
 
 def test3():
     tc = unittest.TestCase()
@@ -67,7 +92,31 @@ def test3():
 
 # implement this function
 def gen_pattern(chars):
-    pass
+    out = len(chars) * 2 - 1
+    out += out - 1
+    mid = out // 2
+    midb = len(chars) - 1
+    String = []
+    for i in range(out):
+      String.append('.')
+    list = []
+    for i in range(len(chars) - 1, -1, -1):
+      a = String[:]
+      a[mid] = chars[i]
+      counter = 2
+      for j in range(i + 1, len(chars)):
+          a[mid + counter] = chars[j]
+          a[mid - counter] = chars[j]
+          counter += 2
+      list.append(a[:])
+    for i in list:
+        for j in i:
+          print(j, end="")
+        print()
+    for i in range(len(list) - 2, -1, -1):
+        for j in list[i]:
+          print(j, end="")
+        print()
 
 def test4():
     tc = unittest.TestCase()
