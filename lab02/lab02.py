@@ -34,7 +34,16 @@ ROMEO_SOLILOQUY = """
 # Implement this function
 def compute_ngrams(toks, n=2):
     """Returns an n-gram dictionary based on the provided list of tokens."""
-    pass
+    dict = {}
+    for i in range(len(toks) - n + 1):
+      tup = []
+      for j in range(n):
+        tup.append(toks[i + j])
+      if str(tup[0]) in dict.keys():
+        dict[str(tup[0])].append(tuple(tup[1:]))
+      else:
+        dict[str(tup[0])] = [tuple(tup[1:])]
+    return dict
 
 def test1():
     test1_1()
@@ -46,7 +55,7 @@ def test1_1():
     tc = TestCase()
     simple_toks = [t.lower() for t in 'I really really like cake.'.split()]
 
-    compute_ngrams(simple_toks)
+    print(compute_ngrams(simple_toks))
     tc.assertEqual(compute_ngrams(simple_toks),
                    {'i': [('really',)], 'like': [('cake.',)], 'really': [('really',), ('like',)]})
     tc.assertEqual(compute_ngrams(simple_toks, n=3),
@@ -92,8 +101,45 @@ def test1_2():
 # EXERCISE 2
 ################################################################################
 # Implement this function
+
 def gen_passage(ngram_dict, length=100):
-    pass
+  sortedKeys = sorted(ngram_dict.keys())
+  #gets a random key from sorted keys and appends to passage
+  currToken = random.choice(sortedKeys)  
+  passage = str(currToken)             
+  #random tuple
+  rand = random.choice(ngram_dict[currToken]) 
+  for i in rand: 
+    passage = passage + " " + str(i)  
+  #while we are under our limit
+  while(len(passage.split()) < length):
+    #retrieving the last token
+    tokens = passage.split()             
+    currToken = str(tokens[-1])
+    #checking if the last token can be the current token  
+    if currToken in list(ngram_dict.keys()):
+        #appending random tuple to list
+        rand = random.choice(ngram_dict[currToken])
+        for i in rand:
+          #if limit is reached, break
+          if(len(passage.split()) == length):
+              return(passage)
+          else:
+            passage = passage + " " + str(i)
+
+    else:
+       #getting an actual key since last token didnt work
+       token = random.choice(sortedKeys)
+       passage = passage + " " + str(token)
+       #appending random tuple to list
+       rand = random.choice(ngram_dict[token])
+       for i in rand:
+          #if limit is reached, break
+          if(len(passage.split()) == length):
+              return(passage)
+          else:
+            passage = passage + " " + str(i)
+  return(passage)
 
 # 50 Points
 def test2():
