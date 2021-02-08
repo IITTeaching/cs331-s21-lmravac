@@ -55,7 +55,6 @@ def test1_1():
     tc = TestCase()
     simple_toks = [t.lower() for t in 'I really really like cake.'.split()]
 
-    print(compute_ngrams(simple_toks))
     tc.assertEqual(compute_ngrams(simple_toks),
                    {'i': [('really',)], 'like': [('cake.',)], 'really': [('really',), ('like',)]})
     tc.assertEqual(compute_ngrams(simple_toks, n=3),
