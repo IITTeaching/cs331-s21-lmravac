@@ -196,7 +196,7 @@ class SuffixArray():
         self.suffixArray = []
         for i in range(len(document)):
             self.suffixArray.append(document[i:])
-        self.comparator = lambda x,y:  0 if x == y else (-1 if x < y else 1)
+        self.comparator = lambda x,y:  0 if x[0: len(y)] == y[0: len(y)] else (-1 if x[0: len(y)] < y[0: len(y)] else 1)
         self.suffixArray = mysort(self.suffixArray, self.comparator)
 
     def positions(self, searchstr: str):
@@ -214,6 +214,7 @@ class SuffixArray():
             while(final[a - 1] == searchstr):
                 a -= 1
             posns.append(a)
+            print(posns)
         return posns
         
 
