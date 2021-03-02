@@ -159,8 +159,8 @@ class ArrayList:
                 temp[i] = x
                 i += 1
             self.data = temp
-        print(self.len)
-        print(len(self.data))
+        #print(self.len)
+        #print(len(self.data))
         self.data[self.len] = value
         self.len += 1
         ### END SOLUTION
