@@ -17,7 +17,7 @@ class Student():
 #################################################################################
 # EXERCISE 1
 #################################################################################
-def mysort(lst: List[T], compare: Callable[[T, T], int]) -> List[T]:
+def mysort(lst: List[T], compare: Callable[[T, T], int]) -> List[T]:      
     """
     This method should sort input list lst of elements of some type T.
 
@@ -25,13 +25,17 @@ def mysort(lst: List[T], compare: Callable[[T, T], int]) -> List[T]:
     elements of type T as input and returns -1 if the left is smaller than the
     right element, 1 if the left is larger than the right, and 0 if the two
     elements are equal.
+    
+    mysort accepts a list called list with elements of type T in it and a 
+    lambda function compare. Compare compares two elements of type T and returns an
+    integer indicating their relationship.
     """
-    for i in range(1, len(lst)):
-        for j in range(i, 0, -1):
-            a = compare(lst[j-1], lst[j])
-            if a != -1:
+    for i in range(1, len(lst)): #Insertion sort. Inserts elements into premade, sorted lists. Steps up by 1 each time
+        for j in range(i, 0, -1): #goes from i backwards in order to put i into the right spot
+            a = compare(lst[j-1], lst[j]) #comparing j and the element less than it
+            if a != -1: #if it isnt -1, meaning the left is NOT smaller then the right, swap the two elements :)     
                lst[j - 1], lst[j] = lst[j], lst[j - 1]
-            else:
+            else:       #otherwise, the loop can be broken out of because everything is in place
                 break
     return lst
 
@@ -42,19 +46,23 @@ def mybinsearch(lst: List[T], elem: S, compare: Callable[[T, S], int]) -> int:
     The elements of lst are compared using function compare. Returns the
     position of the first (leftmost) match for elem in lst. If elem does not
     exist in lst, then return -1.
+
+    mybinsearch will accept a list object named lst, an element S that itll search for,
+    and a lambda function that will compare another element T to S to see if it is higher
+    or lower. mybinsearch is O(log n) 
     """
     low = 0
     high = len(lst) - 1 
-    while(low <= high):
-        mid = (high + low)//2
-        a = compare(lst[mid], elem)
-        if a == 0:
+    while(low <= high):                 #while the low index is still lower than the high index
+        mid = (high + low)//2           #taking average of low and high to get the middle of the leftover indices to check
+        a = compare(lst[mid], elem)     #compare the element in the middle to the one we are searching for
+        if a == 0:                      #if equal, return the current middle index
             return mid
-        elif a == 1:     #current element is larger than key elem
+        elif a == 1:                    #if a == 1 then the current element is larger than key elem
             high = mid - 1 
-        elif a == -1:      #current element is smaller than key elem
+        elif a == -1:                   #if a == -1 then the current element is smaller than key elem
             low = mid + 1
-    return -1
+    return -1                           #return -1 if the key is not in the list at all
 
 
 # 30 Points (total)
@@ -131,27 +139,27 @@ class PrefixSearcher():
         Initializes a prefix searcher using a document and a maximum
         search string length k.
         """
-        self.n = k
-        self.doc = []
-        for i in range(0, len(document)):
-            a = min(i + k, len(document))
-            self.doc.append(document[i:a])
+        self.n = k                             #our maximum search string length
+        self.doc = []                          #stored document that'll contain the array of substrings in the doc of max length k
+        for i in range(0, len(document)):      #iterate through the whole document
+            a = min(i + k, len(document))      #the end index will be whichever index is smaller: the index k larger than our current, or the last doc index
+            self.doc.append(document[i:a])     #go from current index to either k or end of document (allows strings shorter than k toward the end)
         
 
-    def search(self, q):
+    def search(self, q):                       #just a .contains() method, not even a search method
         """
         Return true if the document contains search string q (of
 
         length up to n). If q is longer than n, then raise an
         Exception.
         """
-        if len(q) > self.n:
-            raise Exception("String is too long")
+        if len(q) > self.n:                         #if the string is longer then the specified maximum string length, raise exception
+            raise Exception("String is too long")   
         else:
-            for strings in self.doc:
-                if strings[0:len(q)] == q:
+            for strings in self.doc:                #iterates through whole list until finding the one that is equal to it.
+                if strings[0:len(q)] == q:          #[0:len(q)] is there so that the equality can be accurate and not skewed by the length variation
                     return True
-            return False
+            return False                            #if never found, return false
 
 # 30 Points
 def test2():
@@ -195,21 +203,22 @@ class SuffixArray():
         """
         self.suffixArray = []
         for i in range(len(document)):
-            self.suffixArray.append(document[i:])
+            self.suffixArray.append(document[i:]) #creating all possible suffixes
+        self.comparator1 = lambda x,y:  0 if x == y else (-1 if x < y else 1)
         self.comparator = lambda x,y:  0 if x[0: len(y)] == y[0: len(y)] else (-1 if x[0: len(y)] < y[0: len(y)] else 1)
-        self.suffixArray = mysort(self.suffixArray, self.comparator)
+        self.suffixArray = mysort(self.suffixArray, self.comparator1) #sorting all of the suffixes
 
-    def positions(self, searchstr: str):
+    def positions(self, searchstr: str): #only returns indices in the suffix array and not the actual doc... but you could check that with the length of the substring im sure! 
         """
         Returns all the positions of searchstr in the documented indexed by the suffix array.
         """
         final = []
         posns = []
-        for i in range(len(self.suffixArray)):
+        for i in range(len(self.suffixArray)): #cuts down the length of the suffix array to that of the search string
             a = self.suffixArray[i]
             final.append(a[:len(searchstr)])
-        index = mybinsearch(final, searchstr, self.comparator)
-        if index != -1 :
+        index = mybinsearch(final, searchstr, self.comparator) #binary searches for search string
+        if index != -1 : #backtracks to ensure the first occurance is returned
             a = index
             while(final[a - 1] == searchstr):
                 a -= 1
@@ -218,12 +227,12 @@ class SuffixArray():
         return posns
         
 
-    def contains(self, searchstr: str):
+    def contains(self, searchstr: str): 
         """
-        Returns true of searchstr is coontained in document.
+        Returns true if searchstr is contained in document.
         """
-        a = self.positions(searchstr) 
-        if a == []:
+        a = self.positions(searchstr)  #retrieves positions of the searchstr
+        if a == []:                    #if searchstr returns no positions, print false
             return False
         else:
             print(a)

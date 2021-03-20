@@ -43,18 +43,47 @@ class LinkedList:
         """Implements `x = self[idx]`"""
         assert(isinstance(idx, int))
         ### BEGIN SOLUTION
+        n = self.head.next
+        if(idx > self.length - 1):
+            raise IndexError
+        idx = self._normalize_idx(idx)
+        for i in range(0, idx):
+            n = n.next
+        return n.val
         ### END SOLUTION
-
+    def get_cell(self, idx):
+        """Implements `x = self[idx]`"""
+        assert(isinstance(idx, int))
+        ### BEGIN SOLUTION
+        n = self.head.next
+        if(idx > self.length - 1):
+            raise IndexError
+        idx = self._normalize_idx(idx)
+        for i in range(0, idx):
+            n = n.next
+        return n
     def __setitem__(self, idx, value):
         """Implements `self[idx] = x`"""
         assert(isinstance(idx, int))
         ### BEGIN SOLUTION
+        if(idx > self.length - 1):
+            raise IndexError
+        idx = self._normalize_idx(idx)
+        n = self.get_cell(idx)
+        n.val = value
         ### END SOLUTION
 
     def __delitem__(self, idx):
         """Implements `del self[idx]`"""
         assert(isinstance(idx, int))
         ### BEGIN SOLUTION
+        if(idx > self.length - 1):
+            raise IndexError
+        idx = self._normalize_idx(idx)
+        n = self.get_cell(idx)
+        n.prior.next = n.next
+        n.next.prior = n.prior
+        self.length -= 1
         ### END SOLUTION
 
     ### cursor-based access ###
@@ -63,11 +92,16 @@ class LinkedList:
         """retrieves the value at the current cursor position"""
         assert self.cursor is not self.head
         ### BEGIN SOLUTION
+        return self.cursor.val
         ### END SOLUTION
 
     def cursor_set(self, idx):
         """sets the cursor to the node at the provided index"""
         ### BEGIN SOLUTION
+        idx = self._normalize_idx(idx)
+        self.cursor = self.head.next
+        for i in range(0, idx):
+            self.cursor = self.cursor.next
         ### END SOLUTION
 
     def cursor_move(self, offset):
@@ -78,12 +112,27 @@ class LinkedList:
         node as needed"""
         assert len(self) > 0
         ### BEGIN SOLUTION
+        if offset > 0:
+            for i in range(0, offset):
+                self.cursor = self.cursor.next
+                if self.cursor == self.head:
+                    self.cursor = self.head.next
+        else:
+            for i in range(offset, 0):
+                self.cursor = self.cursor.prior
+                if self.cursor == self.head:
+                    self.cursor = self.head.prior
         ### END SOLUTION
 
     def cursor_insert(self, value):
         """inserts a new value after the cursor and sets the cursor to the
         new node"""
         ### BEGIN SOLUTION
+        n = self.Node(value, self.cursor, self.cursor.next)
+        self.cursor.next.prior = n
+        self.cursor.next = n
+        self.cursor = n
+        self.length += 1
         ### END SOLUTION
 
     def cursor_delete(self):
@@ -91,6 +140,10 @@ class LinkedList:
         following node"""
         assert self.cursor is not self.head and len(self) > 0
         ### BEGIN SOLUTION
+        self.cursor.prior.next = self.cursor.next
+        self.cursor.next.prior = self.cursor.prior
+        self.cursor = self.cursor.next
+        self.length -= 1
         ### END SOLUTION
 
     ### stringification ###
@@ -101,11 +154,21 @@ class LinkedList:
         and enclosed by square brackets. E.g., for a list containing values
         1, 2 and 3, returns '[1, 2, 3]'."""
         ### BEGIN SOLUTION
+        if self.length == 0:
+            return "[]"
+        else:
+            n = self.head
+            return "[" + ", ".join(str(i) for i in iter(self)) + "]"
         ### END SOLUTION
 
     def __repr__(self):
         """Supports REPL inspection. (Same behavior as `str`.)"""
         ### BEGIN SOLUTION
+        if self.length == 0:
+            return "[]"
+        else:
+            n = self.head
+            return "[" + ", ".join(str(i) for i in iter(self)) + "]"
         ### END SOLUTION
 
     ### single-element manipulation ###
@@ -115,18 +178,46 @@ class LinkedList:
         list, as needed. Note that inserting a value at len(self) --- equivalent
         to appending the value --- is permitted. Raises IndexError if idx is invalid."""
         ### BEGIN SOLUTION
+        if idx == self.length:
+            self.append(value)
+            return
+        elif idx == 0:
+            self.prepend(value)
+            return
+        prev = self.get_cell(idx - 1)
+        n = self.Node(value, prev, prev.next)
+        prev.next.prior = n
+        prev.next = n
+        self.length += 1
         ### END SOLUTION
 
     def pop(self, idx=-1):
         """Deletes and returns the element at idx (which is the last element,
         by default)."""
         ### BEGIN SOLUTION
+        idx = self._normalize_idx(idx)
+        node = self.get_cell(idx)
+        node.prior.next = node.next
+        node.next.prior = node.prior
+        self.length -= 1
+        return node.val
         ### END SOLUTION
 
     def remove(self, value):
         """Removes the first (closest to the front) instance of value from the
         list. Raises a ValueError if value is not found in the list."""
         ### BEGIN SOLUTION
+        node = None
+        idx = 0
+        for i in iter(self):
+            if i == value:
+                node = self.get_cell(idx)
+                node.prior.next = node.next
+                node.next.prior = node.prior
+                self.length -= 1
+                return
+            idx += 1
+        raise ValueError
         ### END SOLUTION
 
     ### predicates (T/F queries) ###
@@ -135,11 +226,21 @@ class LinkedList:
         """Returns True if this LinkedList contains the same elements (in order) as
         other. If other is not an LinkedList, returns False."""
         ### BEGIN SOLUTION
+        if len(self) != len(other):
+            return False
+        for i in range(len(self)):
+            if self[i] != other[i]:
+                return False
+        return True
         ### END SOLUTION
 
     def __contains__(self, value):
         """Implements `val in self`. Returns true if value is found in this list."""
         ### BEGIN SOLUTION
+        for i in range(self.length):
+            if self[i] == value:
+                return True
+        return False
         ### END SOLUTION
 
     ### queries ###
@@ -151,11 +252,21 @@ class LinkedList:
     def min(self):
         """Returns the minimum value in this list."""
         ### BEGIN SOLUTION
+        min = self[0]
+        for i in range(1, self.length):
+            if self[i] < min:
+                min = self[i]
+        return min
         ### END SOLUTION
 
     def max(self):
         """Returns the maximum value in this list."""
         ### BEGIN SOLUTION
+        max = self[0]
+        for i in range(1, self.length):
+            if self[i] > max:
+                max = self[i]
+        return max
         ### END SOLUTION
 
     def index(self, value, i=0, j=None):
@@ -164,11 +275,24 @@ class LinkedList:
         specified, search through the end of the list for value. If value
         is not in the list, raise a ValueError."""
         ### BEGIN SOLUTION
+        if j == None:
+            j = self.length
+        i = self._normalize_idx(i)
+        j = self._normalize_idx(j)
+        for k in range(i, j):
+            if self[k] == value:
+                return k
+        raise ValueError
         ### END SOLUTION
 
     def count(self, value):
         """Returns the number of times value appears in this list."""
         ### BEGIN SOLUTION
+        count = 0
+        for i in iter(self):
+            if i == value:
+                count += 1
+        return count 
         ### END SOLUTION
 
     ### bulk operations ###
@@ -179,37 +303,60 @@ class LinkedList:
         of other."""
         assert(isinstance(other, LinkedList))
         ### BEGIN SOLUTION
+        n = LinkedList()
+        for i in iter(self):
+            n.append(i)
+        for i in iter(other):
+            n.append(i)
+        return n
         ### END SOLUTION
 
     def clear(self):
         """Removes all elements from this list."""
         ### BEGIN SOLUTION
+        self.head.next = self.head
+        self.head.prior = self.head
+        self.length = 0
         ### END SOLUTION
 
     def copy(self):
         """Returns a new LinkedList instance (with separate Nodes), that
         contains the same values as this list."""
         ### BEGIN SOLUTION
+        n = LinkedList()
+        for i in iter(self):
+            n.append(i)
+        return n
         ### END SOLUTION
 
     def extend(self, other):
         """Adds all elements, in order, from other --- an Iterable --- to this list."""
         ### BEGIN SOLUTION
+        for i in other:
+            self.append(i)
         ### END SOLUTION
 
     ### iteration ###
     def __iter__(self):
         """Supports iteration (via `iter(self)`)"""
         ### BEGIN SOLUTION
+        n = self.head
+        for i in range(0, self.length):
+            yield n.next.val
+            n = n.next
         ### END SOLUTION
-
     ### reverse ###
     def reverse(self):
         """Return a copy of the list with all elements in reverse order.
-
         E.g., for [1,2,3] you shoudl return [3,2,1].
         """
         ### BEGIN SOLUTION
+        n = self.head
+        list = LinkedList()
+        for i in range(self.length):
+            n = n.prior
+            list.append(n.val)
+        return list
         ### END SOLUTION
 
 
@@ -373,6 +520,10 @@ def test_single_element_manipulation():
         lst.insert(ins_idx, to_ins)
 
     for i in range(100):
+        if data[i] != lst[i]:
+            print(data)
+            print(lst)
+            print(i)
         tc.assertEqual(data[i], lst[i])
 
     for _ in range(50):
