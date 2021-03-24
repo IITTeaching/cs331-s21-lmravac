@@ -51,6 +51,17 @@ def check_delimiters(expr):
     delim_closers = '})]>'
 
     ### BEGIN SOLUTION
+    s = Stack()
+    for c in expr:
+        if str(c) in delim_openers:
+            s.push(c)
+        elif str(c) in delim_closers:
+            if s.empty():
+                return False
+            prev = s.pop()
+            if not delim_closers.index(str(c)) == delim_openers.index(str(prev)):
+                return False
+    return s.empty()
     ### END SOLUTION
 
 ################################################################################
@@ -111,7 +122,23 @@ def test_check_delimiters_6():
 ################################################################################
 # INFIX -> POSTFIX CONVERSION
 ################################################################################
-
+def check_precedence(a, b):
+    if a == "+" or a == "-":
+        a = 0
+    elif a == "(":
+        return 1
+    else:
+        a = 1
+    if b == "+" or b == "-":
+        b = 0
+    else:
+        b = 1
+    if a == b:
+        return 0
+    if a < b:
+        return 1
+    if a > b:
+        return 2
 def infix_to_postfix(expr):
     """Returns the postfix form of the infix expression found in `expr`"""
     # you may find the following precedence dictionary useful
@@ -121,9 +148,52 @@ def infix_to_postfix(expr):
     postfix = []
     toks = expr.split()
     ### BEGIN SOLUTION
+    for t in toks:
+        if t.isdigit():
+            postfix.append(t)
+        else:
+            a = True
+            while a:
+                if ops.empty() or ops.peek == "(":
+                    ops.push(t)
+                    a = False
+                    break
+                elif t == "(":
+                    ops.push(t)
+                    a = False
+                    break
+                elif t == ")":
+                    popped = ops.pop()
+                    while popped != "(":
+                        postfix.append(popped)
+                        if ops.peek() == None:
+                            break
+                        popped = ops.pop()
+                    a = False
+                    break
+                else:
+                    a = check_precedence(ops.peek(), t)
+                    if a == 0:
+                        popped = ops.pop()
+                        postfix.append(popped)
+                        ops.push(t)
+                        a = False
+                        break
+                    elif a == 1:
+                        ops.push(t)
+                        a = False
+                        break
+                    elif a == 2:
+                        popped = ops.pop()
+                        postfix.append(popped)
+
+    for i in iter(ops):
+        #print("ITER: " + str(i))
+        if i != "(" and i != ")":
+            postfix.append(i)
+
     ### END SOLUTION
     return ' '.join(postfix)
-
 ################################################################################
 # INFIX -> POSTFIX CONVERSION - TEST CASES
 ################################################################################
@@ -160,25 +230,61 @@ class Queue:
         self.data = [None] * limit
         self.head = -1
         self.tail = -1
+        self.length = 0
 
     ### BEGIN SOLUTION
     ### END SOLUTION
 
     def enqueue(self, val):
         ### BEGIN SOLUTION
-        ### END SOLUTION
+        if self.length == len(self.data):
+            raise RuntimeError
 
+        if self.head == -1:
+            self.head = 0
+
+        self.tail = (self.tail + 1) % len(self.data)
+        self.data[self.tail] = val
+        self.length += 1
+
+        #print(str(self.data))
+        ### END SOLUTION
+    
     def dequeue(self):
         ### BEGIN SOLUTION
+        if self.length == 0:
+            raise RuntimeError
+
+        temp = self.data[self.head]
+        self.data[self.head] = None  #dequeueing
+
+        self.head = (self.head + 1) % len(self.data)
+        if self.head == self.tail + 1:
+            self.head = -1
+            self.tail = -1
+
+        self.length -= 1
+        #print(str(self.data))
+        return temp
         ### END SOLUTION
 
     def resize(self, newsize):
         assert(len(self.data) < newsize)
         ### BEGIN SOLUTION
+        if self.tail < self.head:
+            self.data = self.data[self.head:] + self.data[:self.tail + 1] + [None] * (newsize - self.tail - len(self.data) + self.head)
+            self.head = 0
+            self.tail = len(self.data[self.head:] + self.data[:self.tail + 1])
+        elif self.tail > self.head:
+            self.data = self.data[self.head:self.tail + 1] + [None] * (newsize - self.tail + self.head)
+            self.head = 0
+            self.tail = len(self.data[self.head:self.tail + 1])
+        #print(str(self.data))
         ### END SOLUTION
 
     def empty(self):
         ### BEGIN SOLUTION
+        return self.length == 0
         ### END SOLUTION
 
     def __bool__(self):
@@ -194,6 +300,8 @@ class Queue:
 
     def __iter__(self):
         ### BEGIN SOLUTION
+        for i in range(self.head, self.tail + 1):
+            yield self.data[i]
         ### END SOLUTION
 
 ################################################################################
