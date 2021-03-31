@@ -247,7 +247,7 @@ class Queue:
         self.data[self.tail] = val
         self.length += 1
 
-        #print(str(self.data))
+        #print(strgit (self.data))
         ### END SOLUTION
     
     def dequeue(self):
@@ -272,13 +272,13 @@ class Queue:
         assert(len(self.data) < newsize)
         ### BEGIN SOLUTION
         if self.tail < self.head:
-            self.data = self.data[self.head:] + self.data[:self.tail + 1] + [None] * (newsize - self.tail - len(self.data) + self.head)
+            self.data = self.data[self.head : ] + self.data[0 :self.tail + 1] + [None] * (newsize - self.tail - len(self.data) + self.head)
             self.head = 0
-            self.tail = len(self.data[self.head:] + self.data[:self.tail + 1])
+            self.tail = len(self.data[self.head : ] + self.data[0 : self.tail + 1])
         elif self.tail > self.head:
-            self.data = self.data[self.head:self.tail + 1] + [None] * (newsize - self.tail + self.head)
+            self.data = self.data[self.head : self.tail + 1] + [None] * (newsize - self.tail + self.head)
             self.head = 0
-            self.tail = len(self.data[self.head:self.tail + 1])
+            self.tail = len(self.data[self.head : self.tail + 1])
         #print(str(self.data))
         ### END SOLUTION
 

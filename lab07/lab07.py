@@ -14,18 +14,61 @@ class ExtensibleHashTable:
 
     def find_bucket(self, key):
         # BEGIN_SOLUTION
+        h = hash(key) % self.n_buckets
+        if self.buckets[h] == None:
+            return -1
+        elif self.buckets[h][0] != key:
+            for i in range(1, self.n_buckets):
+                h = (hash(key) + i) % self.n_buckets
+                if self.buckets[h] != None and self.buckets[h][0] == key:
+                    return h
+        elif self.buckets[h][0] == key:
+            return h
+        return -1
         # END_SOLUTION
 
-    def __getitem__(self,  key):
+    def __getitem__(self, key):
         # BEGIN_SOLUTION
+        index = self.find_bucket(key)
+        if index == -1:
+            raise KeyError
+        return self.buckets[index][1]
         # END_SOLUTION
 
     def __setitem__(self, key, value):
         # BEGIN_SOLUTION
+        self.check_fill()
+        index = self.find_bucket(key)
+        if index != -1:
+            self.buckets[index] = (key, value)
+        else:
+            for i in range(0, self.n_buckets):
+                h = (hash(key) + i) % self.n_buckets
+                if not self.buckets[h]:
+                    self.buckets[h] = (key, value)
+                    self.nitems += 1
+                    return
         # END_SOLUTION
+
+    def check_fill(self):
+        fill = self.nitems / self.n_buckets
+        if fill >= self.fillfactor:
+            self.n_buckets *= 2
+            extended = ExtensibleHashTable(self.n_buckets, self.fillfactor)
+            for i in range(self.n_buckets//2):
+                if self.buckets[i] != None:
+                    extended.__setitem__(self.buckets[i][0], self.buckets[i][1])
+            self.buckets = extended.buckets
 
     def __delitem__(self, key):
         # BEGIN SOLUTION
+        index = self.find_bucket(key)
+        if(index == -1):
+            return
+        else:
+            self.buckets[index] = None
+            self.nitems -= 1
+
         # END SOLUTION
 
     def __contains__(self, key):
@@ -43,6 +86,11 @@ class ExtensibleHashTable:
 
     def __iter__(self):
         ### BEGIN SOLUTION
+        for i in range(0, self.n_buckets):
+            if not self.buckets[i]:
+                continue
+            else:
+                yield self.buckets[i][0]
         ### END SOLUTION
 
     def keys(self):
@@ -50,10 +98,20 @@ class ExtensibleHashTable:
 
     def values(self):
         ### BEGIN SOLUTION
+        for i in range(0, self.n_buckets):
+            if not self.buckets[i]:
+                continue
+            else:
+                yield self.buckets[i][1]
         ### END SOLUTION
 
     def items(self):
         ### BEGIN SOLUTION
+        for i in range(0, self.n_buckets):
+            if not self.buckets[i]:
+                continue
+            else:
+                yield self.buckets[i]
         ### END SOLUTION
 
     def __str__(self):
@@ -184,8 +242,8 @@ def say_success():
 ################################################################################
 def main():
     for t in [test_insert,
-              test_iteration,
               test_getitem,
+              test_iteration,
               test_modification,
               test_deletion,
               test_extension]:

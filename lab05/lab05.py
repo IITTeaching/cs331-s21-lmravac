@@ -345,6 +345,12 @@ class LinkedList:
             yield n.next.val
             n = n.next
         ### END SOLUTION
+    def backIter(dllist):
+        head = dllist.head
+        cur = head.prior
+        while cur.val != None:
+            yield cur.val
+            cur = cur.prior
     ### reverse ###
     def reverse(self):
         """Return a copy of the list with all elements in reverse order.
@@ -708,5 +714,16 @@ def main():
          t()
          say_success()
 
+
+
+
 if __name__ == '__main__':
     main()
+    l = LinkedList()
+    l.append(1)
+    l.append(2)
+    l.append(3)
+
+
+
+
