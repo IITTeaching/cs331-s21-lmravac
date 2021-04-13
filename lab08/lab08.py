@@ -168,19 +168,35 @@ def test_key_heap_5():
 def running_medians(iterable):
     ### BEGIN SOLUTION
     min_heap = Heap(lambda x: -x)
-    max_heap = Heap()
+    max_heap = Heap(lambda x:x)
+    curMedian = iterable[0]
     result = [0] * len(iterable)
     
     for i, x in enumerate(iterable):
-        min_heap.add(x)
-        max_heap.add(min_heap.pop())
+        if x <= curMedian:
+            max_heap.add(x)
+        else:
+            min_heap.add(x)
+
         if len(max_heap) > len(min_heap):
             min_heap.add(max_heap.pop()) 
-            
+        elif len(max_heap) < len(min_heap):
+            max_heap.add(min_heap.pop())   
+
         if len(min_heap) == len(max_heap):
-            result[i] = (min_heap.peek() + max_heap.peek()) / 2
+            curMedian = (min_heap.peek() + max_heap.peek()) / 2
+            result[i] = curMedian
+            #print("A: " + str(result[i]))
+            
         else:
-            result[i] = min_heap.peek()
+            if len(min_heap) > len(max_heap):
+                curMedian = min_heap.peek()
+                result[i] = curMedian
+                #print("B: " + str(result[i]))
+            else:
+                curMedian = max_heap.peek()
+                result[i] = curMedian
+                #print("C: " + str(result[i]))
 
     return result
     ### END SOLUTION
