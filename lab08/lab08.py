@@ -8,7 +8,7 @@ import functools
 class Heap:
     def __init__(self, key=lambda x:x):
         self.data = []
-        self.key  = key
+        self.key = key
 
     @staticmethod
     def _parent(idx):
@@ -24,11 +24,49 @@ class Heap:
 
     def heapify(self, idx=0):
         ### BEGIN SOLUTION
+        if idx == 0:
+            self.trickle_down(0)
         ### END SOLUTION
 
     def add(self, x):
         ### BEGIN SOLUTION
+        self.data.append(x)
+        self.trickle_up(len(self.data) - 1)
+        self.heapify()
         ### END SOLUTION
+    
+    def trickle_down(self, i):
+        lc = Heap._left(i)
+        rc = Heap._right(i)
+
+        if i < len(self.data):
+            iKey = self.key(self.data[i])
+
+            if lc < len(self.data): #if the left child exists
+                lcKey = self.key(self.data[lc])
+
+                if rc < len(self.data): #if the right child also exists
+                    rcKey = self.key(self.data[rc])
+
+                    if rcKey > lcKey:
+                        if rcKey > iKey:
+                            self.data[rc], self.data[i] = self.data[i], self.data[rc]
+                            self.trickle_down(rc)
+                    elif lcKey > iKey:
+                        self.data[lc], self.data[i] = self.data[i], self.data[lc]
+                        self.trickle_down(lc) 
+                elif lcKey > iKey:
+                        self.data[lc], self.data[i] = self.data[i], self.data[lc]
+                        self.trickle_down(lc) 
+
+    def trickle_up(self, i):
+        while (i - 1) // 2 > 0:
+            parent = Heap._parent(i)
+            if self.key(self.data[parent]) < self.key(self.data[i]):
+               self.data[i], self.data[parent] = self.data[parent], self.data[i]
+            else:
+                break
+            i = parent
 
     def peek(self):
         return self.data[0]
@@ -67,7 +105,6 @@ def test_key_heap_1():
     random.seed(0)
     for _ in range(10):
         h.add(random.randrange(100))
-
     tc.assertEqual(h.data, [97, 61, 65, 49, 51, 53, 62, 5, 38, 33])
 
 # (6 point)
@@ -130,6 +167,22 @@ def test_key_heap_5():
 ################################################################################
 def running_medians(iterable):
     ### BEGIN SOLUTION
+    min_heap = Heap(lambda x: -x)
+    max_heap = Heap()
+    result = [0] * len(iterable)
+    
+    for i, x in enumerate(iterable):
+        min_heap.add(x)
+        max_heap.add(min_heap.pop())
+        if len(max_heap) > len(min_heap):
+            min_heap.add(max_heap.pop()) 
+            
+        if len(min_heap) == len(max_heap):
+            result[i] = (min_heap.peek() + max_heap.peek()) / 2
+        else:
+            result[i] = min_heap.peek()
+
+    return result
     ### END SOLUTION
 
 ################################################################################
@@ -174,6 +227,16 @@ def test_median_3():
 ################################################################################
 def topk(items, k, keyf):
     ### BEGIN SOLUTION
+    heap = Heap(keyf)
+    result = [0] * k
+
+    for i in items:
+        heap.add(i)
+
+    for i in range(0, k):
+        result[i] = heap.pop()
+
+    return result
     ### END SOLUTION
 
 ################################################################################
