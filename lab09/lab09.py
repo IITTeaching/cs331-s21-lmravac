@@ -51,13 +51,33 @@ class HBStree:
         KeyError, if key does not exist.
         """
         # BEGIN SOLUTION
+        if key not in self:
+            raise KeyError()
+        for i in self.custom_iter():
+            if i.val == key:
+                print(i.val)
+                return i.val
+        return None
         # END SOLUTION
-
+    def getNode(self, key):
+        """
+        Returns key if key exists in the current version of the tree. Raise a
+        KeyError, if key does not exist.
+        """
+        # BEGIN SOLUTION
+        for i in self.custom_iter():
+            if i.val == key:
+                return i
+        return None
     def __contains__(self, el):
         """
         Return True if el exists in the current version of the tree.
         """
         # BEGIN SOLUTION
+        for i in self.custom_iter():
+            if i.val == el:
+                return True
+        return False
         # END SOLUTION
 
     def insert(self,key):
@@ -67,11 +87,135 @@ class HBStree:
         from creating a new version.
         """
         # BEGIN SOLUTION
+        #print("KEY: " + str(key))
+        node = self.getNode(key)
+        if node != None:
+            return
+        else:
+            current = self.root_versions[-1]
+            new = self.INode(key, None, None)
+            #print("NEW: " + str(new))
+            passed = []
+            if self.num_versions() == 1: #if BST empty
+                self.root_versions.append(new)
+                return
+            while current:  #tracing from the root to the spot the new node will be placed, placing these passed nodes in passed array
+                passed.append(current)
+                if key < current.val:
+                    current = current.left
+                elif key > current.val:
+                    current = current.right
+            #fixing the last node to point to the new node:
+            #print("PASSED: " + str(passed))
+            if passed[-1].val > key:
+                passed[-1] = self.INode(passed[-1].val, new, passed[-1].right)
+                #print("A: " + str(passed[-1]))
+            else:
+                passed[-1] = self.INode(passed[-1].val, passed[-1].left, new)
+                #print("B: " + str(passed[-1]))
+            #fixing all nodes accordingly
+            for i in range(len(passed) - 2, -1, -1):
+                if passed[i].val < passed[i + 1].val:
+                    passed[i] = self.INode(passed[i].val, passed[i].left, passed[i + 1])
+                else:
+                    passed[i] = self.INode(passed[i].val, passed[i+1], passed[i].right)
+                #print("C: " + str(passed))
+            self.root_versions.append(passed[0])
+
+
+
         # END SOLUTION
+    def tmax(self, root):
+        if not root.right:
+            return root.val
+        else:
+            return self.tmax(root.right)
 
     def delete(self,key):
         """Delete key from the tree, creating a new version of the tree. If key does not exist in the current version of the tree, then do nothing and refrain from creating a new version."""
         # BEGIN SOLUTION
+        if key not in self:
+            #print("RETURNED")
+            return
+        #print("Key: " + str(key))
+        node = self.getNode(key)
+        if node == 3900:
+            return
+        else:
+            current = self.root_versions[-1]
+            passed = []
+            while current:  #tracing from the root to the spot the node will be deleted, placing these passed nodes in passed array
+                if key == self.root_versions[-1].val:
+                    passed = [current]
+                    break
+                passed.append(current)
+                if key < current.val:
+                    current = current.left
+                elif key > current.val:
+                    current = current.right
+                elif key == current.val:
+                    break
+            #print("PASSED: " + str(passed))
+            node = passed[-1]
+            #print("NODE: " + str(node))
+            if node.left and node.right:
+                delet = self.tmax(passed[-1].left)
+                #print("delete " + str(delet))
+                #print("Self BEFORE: " + str(self.root_versions[-1]))
+                #print("MAX BEFORE: " + str(self.tmax(passed[-1].left)))
+                self.delete(delet)
+                #print("Self AFTER: " + str(self.root_versions[-1]))
+                #print("MAX AFTER: " + str(self.tmax(self.getNode(passed[-1].left))))
+                passed[-1] = self.Node(delet, self.getNode(passed[-1]).left, passed[-1].right)
+                for i in range(len(passed) - 2, -1, -1):
+                    if passed[i].val < passed[i + 1].val:
+                        passed[i] = self.INode(passed[i].val, passed[i].left, passed[i + 1])
+                    else:
+                        passed[i] = self.INode(passed[i].val, passed[i+1], passed[i].right)
+                self.root_versions[-1] = passed[0]
+                #print("Self FINAL: " + str(self.root_versions[-1]))
+                return
+            elif node.left:
+                passed[-1] = passed[-1].left
+                for i in range(len(passed) - 2, -1, -1):
+                    if passed[i].val < passed[i + 1].val:
+                        passed[i] = self.INode(passed[i].val, passed[i].left, passed[i + 1])
+                    else:
+                        passed[i] = self.INode(passed[i].val, passed[i+1], passed[i].right)
+                self.root_versions.append(passed[0])
+                return
+            elif node.right:
+                #print(self.num_versions())
+                #print("RIGHT")
+                passed[-1] = passed[-1].right
+                for i in range(len(passed) - 2, -1, -1):
+                    if passed[i].val < passed[i + 1].val:
+                        passed[i] = self.INode(passed[i].val, passed[i].left, passed[i + 1])
+                    else:
+                        passed[i] = self.INode(passed[i].val, passed[i+1], passed[i].right)
+                self.root_versions.append(passed[0])
+                return
+            else:
+                #print("NO CHILDREN")
+                if len(passed) == 1:
+                    self.root_versions.append(None)
+                    return
+                nodeIQ = passed[-2]
+                #print([str(p.val) for p in passed])
+                if nodeIQ.left and nodeIQ.left.val == passed[-1].val:
+                    passed[-2] = self.INode(passed[-2].val, None, passed[-2].right)
+                elif nodeIQ.right and nodeIQ.right.val == passed[-1].val:
+                    passed[-2] = self.INode(passed[-2].val, passed[-2].left, None)
+                del passed[-1]
+                for i in range(len(passed) - 2, -1, -1):
+                    if passed[i + 1] == None:
+                        passed[i] = self.INode(passed[i].val, None, None)
+                    elif passed[i].val < passed[i + 1].val:
+                        passed[i] = self.INode(passed[i].val, passed[i].left, passed[i + 1])
+                    else:
+                        passed[i] = self.INode(passed[i].val, passed[i+1], passed[i].right)
+                self.root_versions.append(passed[0])
+                return
         # END SOLUTION
 
     @staticmethod
@@ -143,7 +287,32 @@ class HBStree:
         if timetravel < 0 or timetravel >= len(self.root_versions):
             raise IndexError(f"valid versions for time travel are 0 to {len(self.root_versions) -1}, but was {timetravel}")
         # BEGIN SOLUTION
+        def rec_iter(r):
+            if r:
+                yield from rec_iter(r.left)
+                yield r.val
+                yield from rec_iter(r.right)
+
+        yield from rec_iter(self.root_versions[-1 - timetravel])
         # END SOLUTION
+    
+    def custom_iter(self, timetravel=0):
+        """
+        Return an iterator that allows sorted access to the nodes of a past
+        version of the tree. Parameter timetravel determines how many versions
+        we should go back. The default 0 accesses the current version of the
+        BS-tree.
+        """
+        if timetravel < 0 or timetravel >= len(self.root_versions):
+            raise IndexError(f"valid versions for time travel are 0 to {len(self.root_versions) -1}, but was {timetravel}")
+        # BEGIN SOLUTION
+        def rec_iter(r):
+            if r:
+                yield from rec_iter(r.left)
+                yield r
+                yield from rec_iter(r.right)
+
+        yield from rec_iter(self.root_versions[-1 - timetravel])
 
     @staticmethod
     def stringify_subtree(root):
